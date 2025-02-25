@@ -2,24 +2,28 @@ Simulating the diffusion of heat in a 2D grid with the Euler implicit method.
 
 ## Problem Description
 
+
 The problem consists of simulating the heat diffusion equation:
-$$
-\frac{\partial \rho(x, y, t)}{\partial t} = D \cdot \nabla^2 \rho(x, y,t)
-$$
+
+```math
+\frac{\partial \rho (x, y, t) }{\partial t} = D \cdot \nabla^2 \rho(x, y,t)
+```
+
 where $\rho$ is the temperature function (in Kelvin) and $D$ is the thermal diffusivity coefficient (in square meters per second).
 
 We want to simulate the equation in a discretized square grid with side N.
 
 By applying the Implicit Euler method we find:
-$$
+
+```math
 T^{n+1}_{x,y} = T^{n}_{x, y} + D \left( \frac{T^{n+1}_{x-1, y} + T^{n+1}_{x, y-1} - 4T^{n+1}_{x, y} + T^{n+1}_{x+1, y} + T^{n+1}_{x, y+1}}{\Delta h^2} \right) \Delta t
-$$
+```
 
 Once the terms are rearranged, we obtain:
 
-$$
+```math
 \frac{D \Delta t}{\Delta h^2} \left(4T^{n+1}_{x, y} - T^{n+1}_{x-1, y} - T^{n+1}_{x, y-1} - T^{n+1}_{x+1, y} - T^{n+1}_{x, y+1}\right) + T^{n+1}_{x, y}  = T^{n}_{x, y}
-$$
+```
 
 which holds in the case where there are no constraints at the internal grid points and if the points are not on the grid edges.
 
