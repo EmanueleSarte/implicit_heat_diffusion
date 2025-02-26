@@ -20,6 +20,26 @@ To run the executable just
 ./exam_opengl
 ```
 
+Possible arguments:
+TODO
+
+## Preview
+
+![heat](https://github.com/EmanueleSarte/implicit_heat_diffusion/blob/main/preview.gif?raw=true)
+
+## Commands
+
+**S** - To toggle the start and stop of the animation
+
+**R** - To restart the animation
+
+**P** - To toggle between the pixelated mode
+
+**N** - To step of one iteration (it makes sense if the animation is stopped)
+
+**NUMPAD-N** To toggle the heat contour lines (N between 0 and 9, it makes sense when the pixelated mode is not active)
+
+**1..6** Use the numbers to toggle between different color palettes
 
 
 
