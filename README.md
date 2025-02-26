@@ -43,3 +43,6 @@ The white circle at the start is an infinite source of heat fixed at 300K, the b
 **1..6** Use the numbers to toggle between different color palettes
 
 Clicking on a point will show the temperature in the terminal.
+
+## Explanation and Algorithm:
+Read [explanation.md](./explanation.md)
