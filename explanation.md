@@ -133,7 +133,7 @@ Moreover, storing the matrix efficiently in memory is not difficult, as the rele
 
 The implemented solution aims to optimize both memory usage and computational time for advancing the time step, ensuring that neither resource is excessively consumed.  
 
-In case of a tridiagonal matrix, **Thomas algorithm** can calculate the inverse in linear time. We do not have a tridiagonal matrix, but if we consider the blocks, we have a block tridiagonal matrix:
+In case of a tridiagonal matrix, **Thomas algorithm** can calculate the solution vector in linear time. We do not have a tridiagonal matrix, but if we consider the blocks, we have a block tridiagonal matrix:
 
 ```math
 \begin{bmatrix}
@@ -181,14 +181,139 @@ where the blocks $D$ are tridiagonal matrices, while $U$ and $L$ are diagonal ma
         T_{i0} \\ T_{i1} \\ T_{i2} \\ T_{i3} 
     \end{bmatrix}
 ```
-We can then use the Thomas Block Algorithm (put the citation) to solve a block tridiagonal matrix:
+We can then use the [Thomas Block Algorithm](http://web.archive.org/web/20171215033240/http://www4.ncsu.edu:80/eos/users/w/white/www/white/ma580/chap2.5.PDF) to solve a block tridiagonal matrix:
 
-*TODO PUT IMAGE OF THE ALGO*
+![heat](./media/thomas_alg_block.png)
+where **A** and **G** are support matrices, while **x** will contain the solution of the system.
 
-Where the operations need to be thinked as between matrices and vectors.
+To avoid recalculating the same values in each iteration, the problem is divided into an initial common part (executed only once) and a part that changes with each iteration. 
+
+Specifically, the matrices **A** and **G** depend only on their previous values and on the matrices **D**, **U**, and **B**, which do not change. Consequently, the strategy is to construct them once initially and then only perform the operations in line 9 and line 14 in subsequent steps. (In the case of **A**, we aim to compute its inverse beforehand).
 
 The advantage is that the problem is then reduced to computing the inverse of $N$ square matrices of size $N \times N$ once, creating auxiliary $N \times N$ matrices that allow for computing the next step using only algebraic operations between matrices.
 
+We can further improve the previous algorithm by avoiding the creation of the auxiliary vector **y** and using only the **x** vector.
 
 
-To be continued
+
+## Infinite Sources
+
+Now we want to add conditions inside the grid as well. Specifically, we want the equivalent of infinite sources at a fixed temperature that do not vary over time.
+
+First, let's consider an example where the cell (1,1) is a source at temperature $S_{11}$:
+
+```math
+    \left|
+    \begin{array}{c|cccc|c}
+    \hline
+     & C_{-1, 0} & C_{-1, 1} & C_{-1, 2} & C_{-1, 3} & \\ \hline
+    C_{0, -1} & T_{00} & T_{01} & T_{02} & T_{03} & C_{0, 4}\\
+    C_{1, -1} & T_{10} & S_{11} & T_{12} & T_{13} & C_{1, 4}\\
+    C_{2, -1} & T_{20} & T_{21} & T_{22} & T_{23} & C_{2, 4}\\
+    C_{3, -1} & T_{30} & T_{31} & T_{32} & T_{33} & C_{3, 4}\\ \hline
+    & C_{4, 0} & C_{4, 1} & C_{4, 2} & C_{4, 3} & \\ \hline
+    \end{array}
+    \right|
+```
+
+For the cell \( T_{10} \), the associated equation will be:
+
+```math
+    \frac{D \Delta t}{\Delta h^2} \left(4T^{n+1}_{1, 0} - T^{n+1}_{0, 0} - T^{n+1}_{2, 0}\right) + T^{n+1}_{1, 0}  = T^{n}_{1, 0} + \frac{D \Delta t}{\Delta h^2} (C_{1,-1} + S_{1,1})
+```
+
+This follows the same approach as before, but now the equation for the element (1,1) of the grid must necessarily be:
+
+```math
+    S^{n+1}_{11} = S^{n}_{11} = S_{11} \quad\text{(constant)}
+```
+
+This results in having all zeros in the row associated with that grid cell, except for a 1 on the diagonal.
+
+```math
+    \left[
+    \begin{array}{cccc | cccc | cccc | cccc}
+    \alpha&\beta&&          &\beta&&&               &&&&                &&&& \\
+    \beta&\alpha&\beta&     &&\beta&&               &&&&                &&&& \\
+    &\beta&\alpha&\beta     &&&\beta&               &&&&                &&&& \\
+    &&\beta&\alpha          &&&&\beta               &&&&                &&&& \\ \hline
+    \beta&&&&               \alpha&\beta&&          &\beta&&&            &&&& \\
+    &0&&&               0&1&0&     &&0&&            &&&& \\
+    &&\beta&&               &\beta&\alpha&\beta     &&&\beta&            &&&& \\
+    &&&\beta&               &&\beta&\alpha          &&&&\beta            &&&& \\ \hline
+    &&&&                    \beta&&&&               \alpha&\beta&&          &\beta&&& \\
+    &&&&                    &\beta&&&               \beta&\alpha&\beta&     &&\beta&& \\
+    &&&&                    &&\beta&&               &\beta&\alpha&\beta     &&&\beta& \\
+    &&&&                    &&&\beta&               &&\beta&\alpha          &&&&\beta \\ \hline
+    &&&&        &&&&                    \beta&&&&               \alpha&\beta&&     \\
+    &&&&        &&&&                    &\beta&&&               \beta&\alpha&\beta&\\
+    &&&&        &&&&                    &&\beta&&               &\beta&\alpha&\beta\\
+    &&&&        &&&&                    &&&\beta&               &&\beta&\alpha     \\
+    \end{array}
+    \right]
+```
+With this small modification, solving the associated linear system produces the desired result: the source does not change its temperature over time.
+
+However, we can modify the matrix (and also the vector $f$) in a certain way to ensure that the matrix $A$ remains symmetric, which implies that $G$ will not be symmetric because we are going to move the asymmetry there:
+
+```math
+    \left[
+    \begin{array}{cccc | cccc | cccc | cccc}
+    \alpha&\beta&&          &\beta&&&               &&&&                &&&& \\
+    \beta&\alpha&\beta&     &&0&&               &&&&                &&&& \\
+    &\beta&\alpha&\beta     &&&\beta&               &&&&                &&&& \\
+    &&\beta&\alpha          &&&&\beta               &&&&                &&&& \\ \hline
+    \beta&&&&               \alpha&0&&          &\beta&&&            &&&& \\
+    &0&&&               0&1&0&     &&0&&            &&&& \\
+    &&\beta&&               &0&\alpha&\beta     &&&\beta&            &&&& \\
+    &&&\beta&               &&\beta&\alpha          &&&&\beta            &&&& \\ \hline
+    &&&&                    \beta&&&&               \alpha&\beta&&          &\beta&&& \\
+    &&&&                    &0&&&               \beta&\alpha&\beta&     &&\beta&& \\
+    &&&&                    &&\beta&&               &\beta&\alpha&\beta     &&&\beta& \\
+    &&&&                    &&&\beta&               &&\beta&\alpha          &&&&\beta \\ \hline
+    &&&&        &&&&                    \beta&&&&               \alpha&\beta&&     \\
+    &&&&        &&&&                    &\beta&&&               \beta&\alpha&\beta&\\
+    &&&&        &&&&                    &&\beta&&               &\beta&\alpha&\beta\\
+    &&&&        &&&&                    &&&\beta&               &&\beta&\alpha     \\
+    \end{array}
+    \right]
+    \cdot 
+    \left[
+        \begin{array}{c}
+        T'_{00} \\ T'_{01} \\ T'_{02} \\ T'_{03} \\
+        T'_{10} \\ S'_{11} \\ T'_{12} \\ T'_{13} \\
+        T'_{20} \\ T'_{21} \\ T'_{22} \\ T'_{23} \\
+        T'_{30} \\ T'_{31} \\ T'_{32} \\ T'_{33}
+        \end{array}
+    \right]
+    =
+    \left[
+        \begin{array}{c}
+        T_{00} \\ T_{01} \\ T_{02} \\ T_{03} \\
+        T_{10} \\ S_{11} \\ T_{12} \\ T_{13} \\
+        T_{20} \\ T_{21} \\ T_{22} \\ T_{23} \\
+        T_{30} \\ T_{31} \\ T_{32} \\ T_{33}
+        \end{array}
+    \right]
+    +
+    \left[
+        \begin{array}{c}
+         0 \\  -\beta S_{11}\\ 0 \\ 0 \\ 
+         -\beta S_{11}\\ 0 \\ -\beta S_{11} \\ 0 \\ 0
+         \\  -\beta S_{11}\\ 0 \\ 0 \\ 0
+         \\ 0 \\ 0 \\ 0
+        \end{array}
+    \right]
++
+\left[
+    \begin{array}{c}
+    -\beta (C_{0,-1} + C_{-1,0}) \\ -\beta C_{-1, 1} \\ -\beta C_{-1, 2} \\ -\beta (C_{-1,3} + C_{0,4})  \\
+    -\beta C_{1,-1} \\ 0 \\ 0 \\ -\beta C_{1,4} \\
+    -\beta C_{2,-1} \\ 0 \\ 0 \\ -\beta C_{2,4} \\
+    -\beta (C_{3,-1} + C_{4,0}) \\ -\beta C_{4, 1} \\ -\beta C_{4, 2} \\ -\beta (C_{4,3} + C_{3,4}) 
+    \end{array}
+\right]
+
+```
+
+TO BE CONTINUED AND IMPROVED

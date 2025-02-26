@@ -6,13 +6,22 @@
 #include <vector>
 
 using namespace std;
+
+// Defining lapack methods used
+// DSYTRF - Computes the factorization of a real symmetric matrix A using the Bunch-Kaufman diagonal pivoting method
+// https://www.netlib.org/lapack/explore-3.2-html/dsytrf.f.html or
+// https://www.netlib.org/lapack/explore-html/d8/d0e/group__hetrf_ga431b081d6c9c48af82ec003a7d3070ff.html
+//
+// DSYTRI - Computes the actual inversion of a real symmetric indefinite using the factorization above
+// https://www.netlib.org/lapack/explore-3.2-html/dsytri.f.html
+// https://www.netlib.org/lapack/explore-html/da/dfa/group__hetri_gac3efdf326b7a18865d26c5801635beea.html
+
 extern "C" {
 extern void dsytri_(char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, int *info);
 extern void dsytrf_(char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, int *lwork, int *info);
 }
 
 // ##########################
-
 vector<pair<int, int>> get_circle_indexes(int n, int r, int temp) {
     int c = n / 2;
     int r2 = (r - 1) * (r - 1);
@@ -25,10 +34,10 @@ vector<pair<int, int>> get_circle_indexes(int n, int r, int temp) {
             }
         }
     }
-
     return indexes;
 }
 
+// Return the maximum memory used by the routine dsytrf with a specific side
 int get_lapack_work_size(int side) {
     int info;
     double workopt;
@@ -41,6 +50,7 @@ int get_lapack_work_size(int side) {
     return work_size;
 }
 
+// Actually compute the inverse in place on 'mat'
 void get_inverse(int side, double *mat, double *work, int work_size, int *ipiv) {
 
     int info;
@@ -54,11 +64,10 @@ void get_inverse(int side, double *mat, double *work, int work_size, int *ipiv) 
     }
 }
 
+// In case we don't want to use lapack there is a manual inversion algorithm
 void get_inverse_manual_lite(int n, double *mat, double *work1, double *work2) {
+
     double *dec = work1;
-
-    // print_matrix("mat:", n, n, mat);
-
     // mat è valorizzata soltanto nel triangolo sopra
     // bisogna tenerne conto qui
     for (int i = 0; i < n; i++) {
@@ -119,6 +128,8 @@ void get_inverse_manual_lite(int n, double *mat, double *work1, double *work2) {
     // print_matrix("out", n, n, mat);
 }
 
+// Calculate mat * b = out
+// where 'mat' is an upper triangular matrix of side 'side', 'b' is a vector and 'out' the resulting vector
 void matrix_triup_mult_vector(int side, double *mat, double *b, double *out) {
     int n = side;
     for (int i = 0; i < n; i++) {
@@ -133,6 +144,9 @@ void matrix_triup_mult_vector(int side, double *mat, double *b, double *out) {
     }
 }
 
+// Calculate mat * (b1+b2) = out
+// where 'mat' is an upper triangular matrix with side 'side',
+// 'b1' and 'b2' are two vectors and 'out' is the resulting vector 
 void matrix_triup_mult_vector_with_sum(int side, double *mat, double *b1, double *b2, double *out) {
     int n = side;
     for (int i = 0; i < n; i++) {
@@ -150,7 +164,7 @@ void matrix_triup_mult_vector_with_sum(int side, double *mat, double *b1, double
 // u_block e l_block hanno n elementi ciascuno lungo n (d_block invece ha n elementi lunghi n*n)
 void get_block_matrix_lite(int lil_side, double diff, double **d_block, double **u_block, double **l_block) {
     int n = lil_side;
-    int N = n * n;
+    // int N = n * n;
 
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
@@ -229,6 +243,8 @@ void set_internal_condition(int lil_side, double diff, double **d_block, double 
         }
     }
 }
+
+// Set the boundary condition of the matrix
 void set_boundary_condition(int lil_side, double diff, double **d_block, double **u_block, double **l_block, double **b_block, double **f_block,
                             double bound_temp) {
     int n = lil_side;
