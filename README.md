@@ -1,5 +1,28 @@
 Simulating the diffusion of heat in a 2D grid with the Euler implicit method.
 
+
+
+## Running the executable
+
+In order to compile the source, you need (tested on Ubuntu 22):
+```
+sudo apt-get install libblas-dev liblapack-dev  #LAPACK
+sudo apt-get install freeglut3-dev # OpenGL/GLUT
+sudo apt-get install libglew-dev  # GLEW
+```
+Then, if everything is in the right place
+```
+g++ exam_opengl.cpp -o exam_opengl -llapack -lGL -lglut -lGLEW -Ofast
+```
+
+To run the executable just
+```
+./exam_opengl
+```
+
+
+
+
 ## Problem Description
 
 
