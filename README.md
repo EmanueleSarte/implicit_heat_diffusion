@@ -1,6 +1,6 @@
 Simulating the diffusion of heat in a 2D grid with the Euler implicit method.
 
-
+(Work In Progess)
 
 ## Running the executable
 
@@ -24,6 +24,7 @@ Possible arguments:
 TODO
 
 ## Preview
+The white circle at the start is an infinite source of heat fixed at 300K, the boundary conditions are fixed at 0K.
 
 ![heat](https://github.com/EmanueleSarte/implicit_heat_diffusion/blob/main/preview.gif?raw=true)
 
@@ -41,7 +42,7 @@ TODO
 
 **1..6** Use the numbers to toggle between different color palettes
 
-
+Clicking on a point will show the temperature in the terminal.
 
 ## Problem Description
 
@@ -164,3 +165,5 @@ Additionally, we note that our matrix is symmetric, which implies that its inver
 We need to solve the system of equations to find the unknowns corresponding to the grid temperatures at the next time step. The problem is that the number of elements in the matrix scales as $N^4$, and consequently, if we want to represent our matrix in memory, we would need (assuming 8 bytes per value) approximately $762$ MB for $N=100$ or approximately $12$ GB for $N=200$.
 
 Clearly, storing such a matrix in memory does not make sense, especially because it is zero almost everywhere except at specific points. (The proportion of nonzero values is given by: $\frac{5n-4}{n^3}$).
+
+To be continued
