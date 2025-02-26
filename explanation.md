@@ -184,11 +184,12 @@ where the blocks $D$ are tridiagonal matrices, while $U$ and $L$ are diagonal ma
 We can then use the [Thomas Block Algorithm](http://web.archive.org/web/20171215033240/http://www4.ncsu.edu:80/eos/users/w/white/www/white/ma580/chap2.5.PDF) to solve a block tridiagonal matrix:
 
 ![heat](./media/thomas_alg_block.png)
+
 where **A** and **G** are support matrices, while **x** will contain the solution of the system.
 
 To avoid recalculating the same values in each iteration, the problem is divided into an initial common part (executed only once) and a part that changes with each iteration. 
 
-Specifically, the matrices **A** and **G** depend only on their previous values and on the matrices **D**, **U**, and **B**, which do not change. Consequently, the strategy is to construct them once initially and then only perform the operations in line 9 and line 14 in subsequent steps. (In the case of **A**, we aim to compute its inverse beforehand).
+Specifically, the matrices **A** and **G** depend only on their previous values and on the matrices **D**, **U**, and **L**, which do not change. Consequently, the strategy is to construct them once initially and then only perform the operations in line 9 and line 14 in subsequent steps. (In the case of **A**, we aim to compute its inverse beforehand).
 
 The advantage is that the problem is then reduced to computing the inverse of $N$ square matrices of size $N \times N$ once, creating auxiliary $N \times N$ matrices that allow for computing the next step using only algebraic operations between matrices.
 
@@ -280,10 +281,10 @@ However, we can modify the matrix (and also the vector $f$) in a certain way to 
     \cdot 
     \left[
         \begin{array}{c}
-        T'_{00} \\ T'_{01} \\ T'_{02} \\ T'_{03} \\
-        T'_{10} \\ S'_{11} \\ T'_{12} \\ T'_{13} \\
-        T'_{20} \\ T'_{21} \\ T'_{22} \\ T'_{23} \\
-        T'_{30} \\ T'_{31} \\ T'_{32} \\ T'_{33}
+        T"_{00} \\ T"_{01} \\ T"_{02} \\ T"_{03} \\
+        T"_{10} \\ S"_{11} \\ T"_{12} \\ T"_{13} \\
+        T"_{20} \\ T"_{21} \\ T"_{22} \\ T"_{23} \\
+        T"_{30} \\ T"_{31} \\ T"_{32} \\ T"_{33}
         \end{array}
     \right]
     =
