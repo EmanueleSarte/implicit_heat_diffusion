@@ -30,9 +30,9 @@ which holds in the case where there are no constraints at the internal grid poin
 In the latter case, where the points are on the edges, we need to modify the equation accordingly.  
 For example, in the case of the first point of the grid, where $(x, y) = (0,0)$, we have:
 
-$$
+```math
 \frac{D \Delta t}{\Delta h^2} \left(4T^{n+1}_{0, 0} - T^{n+1}_{1, 0} - T^{n+1}_{0, 1}\right) + T^{n+1}_{0, 0}  = T^{n}_{0, 0} + \frac{D \Delta t}{\Delta h^2} (C_{-1,0} + C_{0, -1})
-$$
+```
 
 where $C_{-1,0}$ and $C_{0,-1}$ represent the constant values (in Kelvin) of the cells just beyond the grid, and these values are fixed, they do not change with time.
 
@@ -47,7 +47,7 @@ where $A$ is the matrix containing the coefficients, $F$ contains any constant t
 
 As an example, if the side length of our matrix is $N=4$, our initial grid will be:
 
-$$
+```math
 \left|
 \begin{array}{c|cccc|c}
 \hline
@@ -59,11 +59,11 @@ C_{3, -1} & T_{30} & T_{31} & T_{32} & T_{33} & C_{3, 4}\\ \hline
 & C_{4, 0} & C_{4, 1} & C_{4, 2} & C_{4, 3} & \\ \hline
 \end{array}
 \right|
-$$
+```
 
 This leads to the linear system $A T^{n+1} = T^{n} + F$:
 
-$$
+```math
 \left[
 \begin{array}{cccc | cccc | cccc | cccc}
 \alpha&\beta&&          &\beta&&&               &&&&                &&&& \\
@@ -87,10 +87,10 @@ $$
 \cdot 
 \left[
 \begin{array}{c}
-T'_{00} \\ T'_{01} \\ T'_{02} \\ T'_{03} \\
-T'_{10} \\ T'_{11} \\ T'_{12} \\ T'_{13} \\
-T'_{20} \\ T'_{21} \\ T'_{22} \\ T'_{23} \\
-T'_{30} \\ T'_{31} \\ T'_{32} \\ T'_{33}
+T"_{00} \\ T"_{01} \\ T"_{02} \\ T"_{03} \\
+T"_{10} \\ T"_{11} \\ T"_{12} \\ T"_{13} \\
+T"_{20} \\ T"_{21} \\ T"_{22} \\ T"_{23} \\
+T"_{30} \\ T"_{31} \\ T"_{32} \\ T"_{33}
 \end{array}
 \right]
 =
@@ -106,13 +106,13 @@ T_{30} \\ T_{31} \\ T_{32} \\ T_{33}
 \left[
 \begin{array}{c}
 -\beta (C_{0,-1} + C_{-1,0}) \\ -\beta C_{-1, 1} \\ -\beta C_{-1, 2} \\ -\beta (C_{-1,3} + C_{0,4})  \\
--\beta C_{1,-1} \\  \\  \\ -\beta C_{1,4} \\
--\beta C_{2,-1} \\  \\  \\ -\beta C_{2,4} \\
+-\beta C_{1,-1} \\ 0 \\ 0 \\ -\beta C_{1,4} \\
+-\beta C_{2,-1} \\ 0 \\ 0 \\ -\beta C_{2,4} \\
 -\beta (C_{3,-1} + C_{4,0}) \\ -\beta C_{4, 1} \\ -\beta C_{4, 2} \\ -\beta (C_{4,3} + C_{3,4}) 
 \end{array}
 \right]
-$$
-where $\alpha = \left(1 + 4\frac{D \Delta t}{\Delta h^2} \right)$ while $\beta = -\frac{D \Delta t}{\Delta h^2}$. Instead, $F$ is the vector that includes the boundary conditions. If this is zero, it is equivalent to implicitly assuming that the temperature outside the grid is 0 Kelvin. We used $T'_{xy}$ as short for $T^{n+1}_{xy}$.
+```
+where $\alpha = \left(1 + 4\frac{D \Delta t}{\Delta h^2} \right)$ while $\beta = -\frac{D \Delta t}{\Delta h^2}$. Instead, $F$ is the vector that includes the boundary conditions. If this is zero, it is equivalent to implicitly assuming that the temperature outside the grid is 0 Kelvin. We used $`T_{xy}`$ as short for $`T^n_{xy}`$ and $` T"_{xy}`$ as short for $`T^{n+1}_{xy} `$.
 
 If we want to modify these boundary conditions, we simply need to change the various $C$ values and adjust the vector $F$ accordingly.
 
@@ -120,4 +120,4 @@ Additionally, we note that our matrix is symmetric, which implies that its inver
 
 We need to solve the system of equations to find the unknowns corresponding to the grid temperatures at the next time step. The problem is that the number of elements in the matrix scales as $N^4$, and consequently, if we want to represent our matrix in memory, we would need (assuming 8 bytes per value) approximately $762$ MB for $N=100$ or approximately $12$ GB for $N=200$.
 
-Clearly, storing such a matrix in memory does not make sense, especially because it is zero almost everywhere except at specific points. (The proportion of nonzero values is given by: $\frac{(5n-4)}{n^3}$).
+Clearly, storing such a matrix in memory does not make sense, especially because it is zero almost everywhere except at specific points. (The proportion of nonzero values is given by: $\frac{5n-4}{n^3}$).
